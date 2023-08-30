@@ -1,0 +1,35 @@
+#.gitignore
+
+#ignore dependencies
+.venv/
+
+#ignore cache
+__pycache__/
+
+#ignore .json
+# *.json
+.vscode/launch.json
+
+#ignore dist
+dist/
+*.whl
+*.gz
+
+#ignore .vscode
+.vscode/
+wget-log
+
+#ignore coverage report
+htmlcov
+coverage.xml
+.coverage
+
+# *.egg-info
+# __pycache__
+# dist/
+# *.pyc
+# .venv/
+# .coverage
+# coverage.xml
+# .pytest_cache/
+# .vim
