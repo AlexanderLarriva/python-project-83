@@ -1,4 +1,4 @@
-from .app import app
+from .app import app  # noqa: F401
 
 __all__ = (
     'app'
