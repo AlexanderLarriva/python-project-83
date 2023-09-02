@@ -1,4 +1,6 @@
 from flask import Flask
+# подключаем jinja2
+from flask import render_template
 from dotenv import load_dotenv
 import os
 
@@ -13,7 +15,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 @app.route('/')
 def index():
-    return 'Hello, World!'
+    return render_template ('index.html', )
 
 
 if __name__ == "__main__":
