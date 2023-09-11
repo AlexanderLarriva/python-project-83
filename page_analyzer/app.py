@@ -31,52 +31,53 @@ def index():
 
 # Добавление инфы о сайте в БД
 # и редирект на страницу с инфо о сайте
-@app.route('/urls', methods=['GET', 'POST'])
+@app.post('/urls')
 def add_url():
-    # messages = get_flashed_messages(with_categories=True)
-    if request.method == 'POST':
-        input_url = request.form['url']
-        # print(url)
-        is_valid, error_message = validate_url(input_url)
-        if not is_valid:
-            flash(error_message, 'danger')
-        else:
-            # Нормализуем имя сайта
-            parsed_url = urlparse(input_url)
-            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-            try:
-                with psycopg2.connect(DATABASE_URL) as conn:
-                    with conn.cursor() as curs:
-                        curs.execute(
-                            'SELECT id FROM urls WHERE name=%s', (base_url,))
-                        existing_record = curs.fetchone()
-                        if existing_record:
-                            # Если запись существует
-                            url_id = existing_record[0]
-                            flash('Страница уже существует', 'info')
-                        else:
-                            curs.execute(
-                                'INSERT INTO urls (name) VALUES (%s)',
-                                (base_url,))
-                            # Получаем ID только что добавленного URL
-                            curs.execute(
-                                'SELECT id FROM urls WHERE name=%s',
-                                (base_url,))
-                            url_id = curs.fetchone()[0]
-                            # print(url_id)
-                            flash('Страница успешно добавлена', 'success')
-                        return redirect(url_for('view_url', id=url_id))
-            except psycopg2.Error:
-                flash('Произошла ошибка при добавлении URL в базу данных. \
-                    Пожалуйста, попробуйте снова.')
+    input_url = request.form['url']
+    # print(url)
+    is_valid, error_message = validate_url(input_url)
+    if not is_valid:
+        flash(error_message, 'danger')
+        return render_template('index.html',)
     else:
-        with psycopg2.connect(DATABASE_URL) as conn:
-            with conn.cursor() as curs:
-                curs.execute(
-                    'SELECT * FROM urls')
-                all_records = curs.fetchall()
-        return render_template('urls.html', records=all_records)
-    return render_template('index.html', )
+        # Нормализуем имя сайта
+        parsed_url = urlparse(input_url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        try:
+            with psycopg2.connect(DATABASE_URL) as conn:
+                with conn.cursor() as curs:
+                    curs.execute(
+                        'SELECT id FROM urls WHERE name=%s', (base_url,))
+                    existing_record = curs.fetchone()
+                    if existing_record:
+                        # Если запись существует
+                        url_id = existing_record[0]
+                        flash('Страница уже существует', 'info')
+                    else:
+                        curs.execute(
+                            'INSERT INTO urls (name) VALUES (%s)',
+                            (base_url,))
+                        # Получаем ID только что добавленного URL
+                        curs.execute(
+                            'SELECT id FROM urls WHERE name=%s',
+                            (base_url,))
+                        url_id = curs.fetchone()[0]
+                        # print(url_id)
+                        flash('Страница успешно добавлена', 'success')
+                    return redirect(url_for('view_url', id=url_id))
+        except psycopg2.Error:
+            flash('Произошла ошибка при добавлении URL в базу данных. \
+                Пожалуйста, попробуйте снова.')
+
+
+@app.get('/urls')
+def show_urls():
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as curs:
+            curs.execute(
+                'SELECT * FROM urls')
+            all_records = curs.fetchall()
+    return render_template('urls.html', records=all_records)
 
 
 @app.route('/urls/<int:id>', methods=['GET'])
