@@ -75,7 +75,7 @@ def show_urls():
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as curs:
             curs.execute(
-                'SELECT * FROM urls')
+                'SELECT * FROM urls order by id DESC')
             all_records = curs.fetchall()
     return render_template('urls.html', records=all_records)
 
@@ -99,6 +99,23 @@ def view_url(id):
                            id=id,
                            name=name,
                            created_at=formatted_date,)
+
+
+@app.route('/urls/<int:id>/checks', methods=['POST'])
+def check_url(id):
+    # здесь вы создаете новую проверку с указанным url_id и текущей датой создания
+    # я использую фиктивный код для работы с базой данных
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as curs:
+            curs.execute(
+                'INSERT INTO url_checks (url_id) VALUES (%s);', (id,)
+            )
+            curs.execute('SELECT * FROM url_checks WHERE id=%s', (id,))
+            all_checks = curs.fetchall()
+            
+    flash('Страница успешно проверена', 'success')
+    return redirect(url_for('view_url'), id=id,)
+
 
 
 if __name__ == "__main__":
