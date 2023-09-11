@@ -87,35 +87,38 @@ def view_url(id):
         with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
             # Получаем ID только что добавленного URL
             curs.execute('SELECT * FROM urls WHERE id=%s', (id,))
-            data = curs.fetchone()
+            data_urls = curs.fetchone()
             # print(data)
             # if not data:
             # Ситуация, когда записи с таким ID нет
             #     return "Record not found", 404
-            id = data.id
-            name = data.name
-            formatted_date = data.created_at.strftime('%Y-%m-%d')
+            id = data_urls.id
+            name = data_urls.name
+            formatted_date = data_urls.created_at.strftime('%Y-%m-%d')
+            curs.execute(
+                'SELECT * FROM url_checks WHERE url_id=%s order by id DESC',
+                (id,))
+            all_checks = curs.fetchall()
     return render_template('url_id.html',
                            id=id,
                            name=name,
-                           created_at=formatted_date,)
+                           created_at=formatted_date,
+                           checks=all_checks,
+                           )
 
 
-@app.route('/urls/<int:id>/checks', methods=['POST'])
+@app.post('/urls/<int:id>/checks')
 def check_url(id):
-    # здесь вы создаете новую проверку с указанным url_id и текущей датой создания
-    # я использую фиктивный код для работы с базой данных
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as curs:
-            curs.execute(
-                'INSERT INTO url_checks (url_id) VALUES (%s);', (id,)
-            )
-            curs.execute('SELECT * FROM url_checks WHERE id=%s', (id,))
-            all_checks = curs.fetchall()
-            
-    flash('Страница успешно проверена', 'success')
-    return redirect(url_for('view_url'), id=id,)
-
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as curs:
+                curs.execute(
+                    'INSERT INTO url_checks (url_id) VALUES (%s);', (id,)
+                )
+        flash('Страница успешно проверена', 'success')
+    except Exception as err:
+        flash(f'Произошла ошибка при проверке: {err}', 'danger')
+    return redirect(url_for('view_url', id=id))
 
 
 if __name__ == "__main__":
