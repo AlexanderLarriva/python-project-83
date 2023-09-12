@@ -142,15 +142,28 @@ def check_url(id):
                     soup = BeautifulSoup(html_content, 'html.parser')
                     # Проверяю наличие тега <h1>
                     h1_tag = soup.find('h1')
+                    # Извлекаю содержимое тега <title>
+                    title_tag = soup.title
+                    # Извл атрибута content у тега <meta name="description">
+                    description_tag = soup.find('meta',
+                                                attrs={'name': 'description'})
                     h1_content = None
+                    title_text = None
+                    description_content = None
                     if h1_tag:
                         h1_content = h1_tag.text
+                    if title_tag:
+                        title_text = title_tag.text
+                    if description_tag:
+                        description_content = description_tag['content']
                     curs.execute(
                         '''INSERT INTO
-                                url_checks (url_id, status_code, h1)
+                            url_checks (url_id, status_code,
+                            h1, title, description)
                         VALUES
-                                (%s, %s, %s)''',
-                        (id, status_code, h1_content)
+                            (%s, %s, %s, %s, %s)''',
+                        (id, status_code, h1_content,
+                         title_text, description_content)
                     )
                     flash('Страница успешно проверена', 'success')
                 else:
