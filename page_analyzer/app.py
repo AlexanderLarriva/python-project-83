@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
 from dotenv import load_dotenv
+import requests
 import os
 
 load_dotenv()
@@ -127,7 +128,17 @@ def check_url(id):
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as curs:
                 curs.execute(
-                    'INSERT INTO url_checks (url_id) VALUES (%s);', (id,)
+                    'SELECT name FROM urls WHERE id=%s', (id,)
+                )
+                url_name = curs.fetchone()[0]
+                response = requests.get(url_name)
+                status_code = response.status_code
+                curs.execute(
+                    '''INSERT INTO
+                            url_checks (url_id, status_code)
+                       VALUES
+                            (%s, %s)''',
+                    (id, status_code)
                 )
         flash('Страница успешно проверена', 'success')
     except Exception as err:
