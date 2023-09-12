@@ -74,8 +74,25 @@ def add_url():
 def show_urls():
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as curs:
-            curs.execute(
-                'SELECT * FROM urls order by id DESC')
+            # curs.execute(
+            #     'SELECT * FROM urls order by id DESC')
+            # curs.execute('SELECT urls.id, name, MAX(url_checks.created_at), status_code FROM urls LEFT JOIN url_checks ON urls.id = url_checks.url_id GROUP BY urls.id, status_code ORDER BY urls.id DESC;')
+            curs.execute('''
+                            SELECT 
+                                urls.id, 
+                                name, 
+                                MAX(url_checks.created_at) AS latest_created_at,
+                                status_code
+                            FROM 
+                                urls 
+                            LEFT JOIN 
+                                url_checks
+                            ON urls.id = url_checks.url_id
+                            GROUP BY 
+                                urls.id, name, status_code
+                            ORDER BY 
+                                urls.id DESC;
+                        ''')
             all_records = curs.fetchall()
     return render_template('urls.html', records=all_records)
 
