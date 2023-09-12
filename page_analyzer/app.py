@@ -14,6 +14,7 @@ import psycopg2
 from psycopg2.extras import NamedTupleCursor
 from dotenv import load_dotenv
 import requests
+from bs4 import BeautifulSoup
 import os
 
 load_dotenv()
@@ -135,12 +136,21 @@ def check_url(id):
                 status_code = response.status_code
                 error_codes = [400, 401, 403, 404, 429, 500, 502, 503]
                 if status_code not in error_codes:
+                    # Получаю HTML-содержимое страницы
+                    html_content = response.content
+                    # Применяю Beautiful Soup для анализа содержимого
+                    soup = BeautifulSoup(html_content, 'html.parser')
+                    # Проверяю наличие тега <h1>
+                    h1_tag = soup.find('h1')
+                    h1_content = None
+                    if h1_tag:
+                        h1_content = h1_tag.text
                     curs.execute(
                         '''INSERT INTO
-                                url_checks (url_id, status_code)
+                                url_checks (url_id, status_code, h1)
                         VALUES
-                                (%s, %s)''',
-                        (id, status_code)
+                                (%s, %s, %s)''',
+                        (id, status_code, h1_content)
                     )
                     flash('Страница успешно проверена', 'success')
                 else:
