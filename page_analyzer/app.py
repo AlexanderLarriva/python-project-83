@@ -133,14 +133,18 @@ def check_url(id):
                 url_name = curs.fetchone()[0]
                 response = requests.get(url_name)
                 status_code = response.status_code
-                curs.execute(
-                    '''INSERT INTO
-                            url_checks (url_id, status_code)
-                       VALUES
-                            (%s, %s)''',
-                    (id, status_code)
-                )
-        flash('Страница успешно проверена', 'success')
+                error_codes = [400, 401, 403, 404, 429, 500, 502, 503]
+                if status_code not in error_codes:
+                    curs.execute(
+                        '''INSERT INTO
+                                url_checks (url_id, status_code)
+                        VALUES
+                                (%s, %s)''',
+                        (id, status_code)
+                    )
+                    flash('Страница успешно проверена', 'success')
+                else:
+                    flash('Произошла ошибка при проверке', 'danger')
     except Exception as err:
         flash(f'Произошла ошибка при проверке: {err}', 'danger')
     return redirect(url_for('view_url', id=id))
