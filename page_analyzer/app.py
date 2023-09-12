@@ -15,6 +15,10 @@ from psycopg2.extras import NamedTupleCursor
 from dotenv import load_dotenv
 import os
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -72,26 +76,30 @@ def add_url():
 
 @app.get('/urls')
 def show_urls():
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as curs:
-            curs.execute('''
-                            SELECT
-                                urls.id,
-                                name,
-                                MAX(url_checks.created_at) AS latest_created_at,
-                                status_code
-                            FROM
-                                urls
-                            LEFT JOIN
-                                url_checks
-                            ON urls.id = url_checks.url_id
-                            GROUP BY
-                                urls.id, name, status_code
-                            ORDER BY
-                                urls.id DESC
-                        ''')
-            all_records = curs.fetchall()
-    return render_template('urls.html', records=all_records)
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                                SELECT
+                                    urls.id,
+                                    name,
+                                    MAX(url_checks.created_at) AS latest_data,
+                                    status_code
+                                FROM
+                                    urls
+                                LEFT JOIN
+                                    url_checks
+                                ON urls.id = url_checks.url_id
+                                GROUP BY
+                                    urls.id, name, status_code
+                                ORDER BY
+                                    urls.id DESC
+                            ''')
+                all_records = curs.fetchall()
+        return render_template('urls.html', records=all_records)
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        raise e
 
 
 @app.route('/urls/<int:id>', methods=['GET'])
