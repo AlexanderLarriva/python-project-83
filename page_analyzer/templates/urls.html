@@ -45,8 +45,8 @@
         <tr>
           <td>{{ record[0] }}</td>
           <td><a href="/urls/{{ record[0] }}">{{ record[1] }}</a></td>
-          <td>{{ record[2].strftime('%Y-%m-%d') }} </td>
-          <td>{{ record[3] }} </td>
+          <td>{{ record[2].strftime('%Y-%m-%d') if record[2] else '' }} </td>
+          <td>{{ '' if record[3] is none else record[3] }} </td>
         </tr>
       {% endfor %}
     </tbody>
