@@ -3,10 +3,8 @@ from flask import (
     request,
     redirect,
     url_for,
-    flash,
-    # get_flashed_messages
+    flash
 )
-# подключаем jinja2
 from flask import render_template
 from .data_validators import validate_url
 from urllib.parse import urlparse
@@ -31,8 +29,6 @@ def index():
     return render_template('index.html', )
 
 
-# Добавление инфы о сайте в БД
-# и редирект на страницу с инфо о сайте
 @app.post('/urls')
 def add_url():
     input_url = request.form['url']
@@ -41,7 +37,6 @@ def add_url():
         flash(error_message, 'danger')
         return render_template('index.html',)
     else:
-        # Нормализуем имя сайта
         parsed_url = urlparse(input_url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
         try:
@@ -51,14 +46,12 @@ def add_url():
                         'SELECT id FROM urls WHERE name=%s', (base_url,))
                     existing_record = curs.fetchone()
                     if existing_record:
-                        # Если запись существует
                         url_id = existing_record[0]
                         flash('Страница уже существует', 'info')
                     else:
                         curs.execute(
                             'INSERT INTO urls (name) VALUES (%s)',
                             (base_url,))
-                        # Получаем ID только что добавленного URL
                         curs.execute(
                             'SELECT id FROM urls WHERE name=%s',
                             (base_url,))
@@ -98,7 +91,6 @@ def show_urls():
 def view_url(id):
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
-            # Получаем ID только что добавленного URL
             curs.execute('SELECT * FROM urls WHERE id=%s', (id,))
             data_urls = curs.fetchone()
             id = data_urls.id
@@ -145,7 +137,6 @@ def check_url(id):
                 status_code = response.status_code
                 error_codes = [400, 401, 403, 404, 429, 500, 502, 503]
                 if status_code not in error_codes:
-                    # Получаю HTML-содержимое страницы
                     h1_content, title_text, description_content = (
                         parse_html(response.content))
                     curs.execute(
