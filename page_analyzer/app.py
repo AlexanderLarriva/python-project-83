@@ -36,7 +36,6 @@ def index():
 @app.post('/urls')
 def add_url():
     input_url = request.form['url']
-    # print(url)
     is_valid, error_message = validate_url(input_url)
     if not is_valid:
         flash(error_message, 'danger')
@@ -64,7 +63,6 @@ def add_url():
                             'SELECT id FROM urls WHERE name=%s',
                             (base_url,))
                         url_id = curs.fetchone()[0]
-                        # print(url_id)
                         flash('Страница успешно добавлена', 'success')
                     return redirect(url_for('view_url', id=url_id))
         except psycopg2.Error:
@@ -98,16 +96,11 @@ def show_urls():
 
 @app.route('/urls/<int:id>', methods=['GET'])
 def view_url(id):
-    # messages = get_flashed_messages(with_categories=True)
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
             # Получаем ID только что добавленного URL
             curs.execute('SELECT * FROM urls WHERE id=%s', (id,))
             data_urls = curs.fetchone()
-            # print(data)
-            # if not data:
-            # Ситуация, когда записи с таким ID нет
-            #     return "Record not found", 404
             id = data_urls.id
             name = data_urls.name
             formatted_date = data_urls.created_at.strftime('%Y-%m-%d')
@@ -121,6 +114,22 @@ def view_url(id):
                            created_at=formatted_date,
                            checks=all_checks,
                            )
+
+
+def parse_html(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    h1_tag = soup.find('h1')
+    h1_content = h1_tag.text if h1_tag else None
+
+    title_tag = soup.title
+    title_text = title_tag.text if title_tag else None
+
+    description_tag = soup.find('meta', attrs={'name': 'description'})
+    description_content = description_tag['content'] \
+        if description_tag else None
+
+    return h1_content, title_text, description_content
 
 
 @app.post('/urls/<int:id>/checks')
@@ -137,25 +146,8 @@ def check_url(id):
                 error_codes = [400, 401, 403, 404, 429, 500, 502, 503]
                 if status_code not in error_codes:
                     # Получаю HTML-содержимое страницы
-                    html_content = response.content
-                    # Применяю Beautiful Soup для анализа содержимого
-                    soup = BeautifulSoup(html_content, 'html.parser')
-                    # Проверяю наличие тега <h1>
-                    h1_tag = soup.find('h1')
-                    # Извлекаю содержимое тега <title>
-                    title_tag = soup.title
-                    # Извл атрибута content у тега <meta name="description">
-                    description_tag = soup.find('meta',
-                                                attrs={'name': 'description'})
-                    h1_content = None
-                    title_text = None
-                    description_content = None
-                    if h1_tag:
-                        h1_content = h1_tag.text
-                    if title_tag:
-                        title_text = title_tag.text
-                    if description_tag:
-                        description_content = description_tag['content']
+                    h1_content, title_text, description_content = (
+                        parse_html(response.content))
                     curs.execute(
                         '''INSERT INTO
                             url_checks (url_id, status_code,
