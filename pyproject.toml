@@ -3,8 +3,18 @@ name = "hexlet-code"
 version = "0.1.0"
 description = ""
 authors = ["Alexander & Ludmila Markiza <alarriva@yandex.ru>"]
+repository = "https://github.com/AlexanderLarriva/python-project-83"
 readme = "README.md"
 packages = [{include = "page_analyzer"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://python-page-analyzer-ru.onrender.com"
+"Bug Tracker" = "https://github.com/AlexanderLarriva/python-project-83/issues"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -14,10 +24,10 @@ psycopg2-binary = "^2.9.7"
 validators = "^0.22.0"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"
-python-dotenv = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]
