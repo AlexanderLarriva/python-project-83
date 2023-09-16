@@ -35,7 +35,8 @@ def add_url():
     is_valid, error_message = validate_url(input_url)
     if not is_valid:
         flash(error_message, 'danger')
-        return render_template('index.html',)
+        return render_template('index.html',), 422
+
     else:
         parsed_url = urlparse(input_url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -135,7 +136,7 @@ def check_url(id):
                 url_name = curs.fetchone()[0]
                 response = requests.get(url_name)
                 status_code = response.status_code
-                error_codes = [400, 401, 403, 404, 429, 500, 502, 503]
+                error_codes = [400, 401, 403, 404, 422, 429, 500, 502, 503]
                 if status_code not in error_codes:
                     h1_content, title_text, description_content = (
                         parse_html(response.content))
