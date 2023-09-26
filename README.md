@@ -41,4 +41,7 @@ To view the live Page Analyzer application, [click here](https://python-page-ana
 
 5. Run the application:
 
+    ```bash
+    make start
+
 You can now access the app locally at `http://localhost:8000/` in your browser.
