@@ -65,17 +65,13 @@ def fetch_url_name_by_id(id):
             return curs.fetchone()[0]
 
 
-def perform_url_check(id,
-                      status_code,
-                      h1_content,
-                      title_text,
-                      description_content):
+def perform_url_check(data):
     with connect_to_db() as conn:
         with conn.cursor() as curs:
             curs.execute(
                 '''INSERT INTO
                     url_checks (url_id, status_code, h1, title, description)
                 VALUES (%s, %s, %s, %s, %s)''',
-                (id, status_code, h1_content,
-                 title_text, description_content)
+                (data["id"], data["status_code"], data["h1_content"],
+                 data["title_text"], data["description_content"])
             )

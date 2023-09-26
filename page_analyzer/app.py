@@ -80,11 +80,14 @@ def check_url(id):
             parse_html(response.content)
         )
 
-        perform_url_check(id,
-                          status_code,
-                          h1_content,
-                          title_text,
-                          description_content)
+        data = {"id": id,
+                "status_code": status_code,
+                "h1_content": h1_content,
+                "title_text": title_text,
+                "description_content": description_content
+                }
+
+        perform_url_check(data)
 
         flash('Страница успешно проверена', 'success')
     except requests.HTTPError:
