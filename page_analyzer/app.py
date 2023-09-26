@@ -10,11 +10,13 @@ import requests
 from .config import SECRET_KEY
 from .data_validators import validate_url
 from .url_normalizer import normalize_url
+from .url_parser import parse_html
 from .queries import (
     fetch_url_by_name,
     insert_url,
     fetch_all_records,
     fetch_data_url,
+    fetch_url_name_by_id,
     perform_url_check
 )
 
@@ -70,7 +72,20 @@ def view_url(id):
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
     try:
-        perform_url_check(id)
+        url_name = fetch_url_name_by_id(id)
+        response = requests.get(url_name)
+        response.raise_for_status()
+        status_code = response.status_code
+        h1_content, title_text, description_content = (
+            parse_html(response.content)
+        )
+
+        perform_url_check(id,
+                          status_code,
+                          h1_content,
+                          title_text,
+                          description_content)
+
         flash('Страница успешно проверена', 'success')
     except requests.HTTPError:
         flash('Произошла ошибка при проверке', 'danger')

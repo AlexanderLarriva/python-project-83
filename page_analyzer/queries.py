@@ -1,7 +1,5 @@
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
-from .url_parser import parse_html
-import requests
 from .config import DATABASE_URL
 
 
@@ -60,22 +58,24 @@ def fetch_data_url(id):
     return (id, name, formatted_date, all_checks)
 
 
-def perform_url_check(id):
+def fetch_url_name_by_id(id):
     with connect_to_db() as conn:
         with conn.cursor() as curs:
             curs.execute('SELECT name FROM urls WHERE id=%s', (id,))
-            url_name = curs.fetchone()[0]
-            response = requests.get(url_name)
-            response.raise_for_status()
+            return curs.fetchone()[0]
 
-            h1_content, title_text, description_content = (
-                parse_html(response.content)
-            )
 
+def perform_url_check(id,
+                      status_code,
+                      h1_content,
+                      title_text,
+                      description_content):
+    with connect_to_db() as conn:
+        with conn.cursor() as curs:
             curs.execute(
                 '''INSERT INTO
                     url_checks (url_id, status_code, h1, title, description)
                 VALUES (%s, %s, %s, %s, %s)''',
-                (id, response.status_code, h1_content,
+                (id, status_code, h1_content,
                  title_text, description_content)
             )
