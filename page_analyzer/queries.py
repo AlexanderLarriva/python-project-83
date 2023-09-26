@@ -5,12 +5,10 @@ import requests
 from .config import DATABASE_URL
 
 
-# подключаемся к БД
 def connect_to_db():
     return psycopg2.connect(DATABASE_URL)
 
 
-# извлекаем имя урл
 def fetch_url_by_name(base_url):
     with connect_to_db() as conn:
         with conn.cursor() as curs:
@@ -18,7 +16,6 @@ def fetch_url_by_name(base_url):
             return curs.fetchone()
 
 
-# вставляем урл
 def insert_url(base_url):
     with connect_to_db() as conn:
         with conn.cursor() as curs:
@@ -27,7 +24,6 @@ def insert_url(base_url):
             return curs.fetchone()[0]
 
 
-# извлекаем все записи
 def fetch_all_records():
     query = '''
                 SELECT
@@ -46,7 +42,6 @@ def fetch_all_records():
             return curs.fetchall()
 
 
-# извлекаем данные урл
 def fetch_data_url(id):
     with connect_to_db() as conn:
         with conn.cursor(cursor_factory=NamedTupleCursor) as curs:
@@ -65,7 +60,6 @@ def fetch_data_url(id):
     return (id, name, formatted_date, all_checks)
 
 
-# получаем сведения из http
 def perform_url_check(id):
     with connect_to_db() as conn:
         with conn.cursor() as curs:
