@@ -17,7 +17,7 @@
               {% for record in records %}
                 <tr>
                   <td>{{ record[0] }}</td>
-                  <td><a href="/urls/{{ record[0] }}">{{ record[1] }}</a></td>
+                  <td><a href="{{ url_for('view_url', id=record[0]) }}">{{ record[1] }}</a></td>
                   <td>{{ record[2].strftime('%Y-%m-%d') if record[2] else '' }} </td>
                   <td>{{ '' if record[3] is none else record[3] }} </td>
                 </tr>
